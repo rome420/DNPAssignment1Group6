@@ -5,28 +5,66 @@ namespace InMemoryRepositories;
 
 public class PostInMemoryRepository : IPostRepository
 {
-    public Post Add(Post post)
+    private readonly List<Post> _posts = new List<Post>();
+
+    public async Task<Post> AddAsync(Post post)
     {
-        throw new NotImplementedException();
+        if (post == null)
+        {
+            throw new ArgumentNullException(nameof(post));
+        }
+
+        post.PostId = _posts.Any() 
+            ? _posts.Max(p => p.PostId) + 1
+            : 1;
+        _posts.Add(post);
+        return await Task.FromResult(post);
     }
 
-    public void Update(Post post)
+    public async Task UpdateAsync(Post post)
     {
-        throw new NotImplementedException();
+        if (post == null)
+        {
+            throw new ArgumentNullException(nameof(post));
+        }
+
+        var existingPost = _posts.SingleOrDefault(p => p.PostId == post.PostId);
+        if (existingPost == null)
+        {
+            throw new InvalidOperationException($"Post with ID '{post.PostId}' not found.");
+        }
+
+        _posts.Remove(existingPost);
+        _posts.Add(post);
+
+        await Task.CompletedTask;
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var postToRemove = _posts.SingleOrDefault(p => p.PostId == id);
+        if (postToRemove == null)
+        {
+            throw new InvalidOperationException($"Post with ID '{id}' not found.");
+        }
+
+        _posts.Remove(postToRemove);
+        await Task.CompletedTask;
     }
 
-    public Post GetSingle(int id)
+    public async Task<Post> GetSingleAsync(int id)
     {
-        throw new NotImplementedException();
+        var post = _posts.SingleOrDefault(p => p.PostId == id);
+        if (post == null)
+        {
+            throw new InvalidOperationException($"Post with ID '{id}' not found.");
+        }
+
+        return await Task.FromResult(post);
     }
 
     public IQueryable<Post> GetMany()
     {
-        throw new NotImplementedException();
+        return _posts.AsQueryable();
     }
 }
