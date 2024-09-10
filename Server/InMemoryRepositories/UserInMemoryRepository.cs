@@ -4,28 +4,66 @@ namespace InMemoryRepositories;
 
 public class UserInMemoryRepository : IUserRepository
 {
-    public User Add(User user)
+    private readonly List<User> _users = new List<User>();
+
+    public async Task<User> AddAsync(User user)
     {
-        throw new NotImplementedException();
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        user.UserId = _users.Any() 
+            ? _users.Max(u => u.UserId) + 1
+            : 1;
+        _users.Add(user);
+        return await Task.FromResult(user);
     }
 
-    public void Update(User user)
+    public async Task UpdateAsync(User user)
     {
-        throw new NotImplementedException();
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        var existingUser = _users.SingleOrDefault(u => u.UserId == user.UserId);
+        if (existingUser == null)
+        {
+            throw new InvalidOperationException($"User with ID '{user.UserId}' not found.");
+        }
+
+        _users.Remove(existingUser);
+        _users.Add(user);
+
+        await Task.CompletedTask;
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var userToRemove = _users.SingleOrDefault(u => u.UserId == id);
+        if (userToRemove == null)
+        {
+            throw new InvalidOperationException($"User with ID '{id}' not found.");
+        }
+
+        _users.Remove(userToRemove);
+        await Task.CompletedTask;
     }
 
-    public User GetSingle(int id)
+    public async Task<User> GetSingleAsync(int id)
     {
-        throw new NotImplementedException();
+        var user = _users.SingleOrDefault(u => u.UserId == id);
+        if (user == null)
+        {
+            throw new InvalidOperationException($"User with ID '{id}' not found.");
+        }
+
+        return await Task.FromResult(user);
     }
 
     public IQueryable<User> GetMany()
     {
-        throw new NotImplementedException();
+        return _users.AsQueryable();
     }
 }
