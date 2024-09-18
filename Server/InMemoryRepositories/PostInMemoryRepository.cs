@@ -1,4 +1,5 @@
-﻿using Entities;
+﻿using System.Collections;
+using Entities;
 using RepositoryContracts;
 
 namespace InMemoryRepositories;
@@ -67,4 +68,25 @@ public class PostInMemoryRepository : IPostRepository
     {
         return _posts.AsQueryable();
     }
+
+    // Implementing GetPostByIdAsync method to satisfy the interface contract
+    public Task<Post> GetPostByIdAsync(int postId)
+    {
+        var post = _posts.SingleOrDefault(p => p.PostId == postId);
+        return Task.FromResult(post);
+    }
+    
+    public Task<IEnumerable<Post>> GetPostsAsync()
+    {
+        return Task.FromResult(_posts.AsEnumerable());
+    }
+    
+    public PostInMemoryRepository()
+    {
+        // Adding dummy posts
+        _posts.Add(new Post { PostId = 1, Title = "First Post", Body = "This is the first post" });
+        _posts.Add(new Post { PostId = 2, Title = "Second Post", Body = "This is the second post" });
+        _posts.Add(new Post { PostId = 3, Title = "Third Post", Body = "This is the third post" });
+    }
+
 }

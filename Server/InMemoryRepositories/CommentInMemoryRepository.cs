@@ -1,11 +1,13 @@
 ﻿using Entities;
 using RepositoryContracts;
-namespace InMemoryRepositories;
 
-public class CommentInMemoryRepository : ICommentRepository
+namespace InMemoryRepositories
+{
+    public class CommentInMemoryRepository : ICommentRepository
     {
         private readonly List<Comment> _comments = new List<Comment>();
         private readonly List<Post> _posts = new List<Post>();  
+        
         public async Task<Comment> AddAsync(Comment comment)
         {
             if (comment == null)
@@ -13,15 +15,15 @@ public class CommentInMemoryRepository : ICommentRepository
                 throw new ArgumentNullException(nameof(comment));
             }
 
-            
-            if (comment.Post == null || !_posts.Any(p => p.PostId == comment.Post.PostId))
+            if (!_posts.Any(p => p.PostId == comment.PostId))
             {
-                throw new ArgumentException($"Post with ID {comment.Post?.PostId} does not exist.");
+                throw new ArgumentException($"Post with ID {comment.PostId} does not exist.");
             }
 
             comment.CommentId = _comments.Any() 
                 ? _comments.Max(c => c.CommentId) + 1
                 : 1;
+
             _comments.Add(comment);
             return await Task.FromResult(comment);
         }
@@ -39,10 +41,9 @@ public class CommentInMemoryRepository : ICommentRepository
                 throw new InvalidOperationException($"Comment with ID '{comment.CommentId}' not found.");
             }
 
-           
-            if (comment.Post == null || !_posts.Any(p => p.PostId == comment.Post.PostId))
+            if (!_posts.Any(p => p.PostId == comment.PostId))
             {
-                throw new ArgumentException($"Post with ID {comment.Post?.PostId} does not exist.");
+                throw new ArgumentException($"Post with ID {comment.PostId} does not exist.");
             }
 
             _comments.Remove(existingComment);
@@ -63,6 +64,12 @@ public class CommentInMemoryRepository : ICommentRepository
             await Task.CompletedTask;
         }
 
+        public Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId)
+        {
+            var comments = _comments.Where(c => c.PostId == postId);
+            return Task.FromResult(comments.AsEnumerable());
+        }
+
         public async Task<Comment> GetSingleAsync(int id)
         {
             var comment = _comments.SingleOrDefault(c => c.CommentId == id);
@@ -78,6 +85,12 @@ public class CommentInMemoryRepository : ICommentRepository
         {
             return _comments.AsQueryable();
         }
-
         
+        public CommentInMemoryRepository()
+        {
+            _comments.Add(new Comment { CommentId = 1, PostId = 1, Body = "This is a comment on the first post" });
+            _comments.Add(new Comment { CommentId = 2, PostId = 1, Body = "This is a comment on the second post" });
+            _comments.Add(new Comment { CommentId = 3, PostId = 1, Body = "This is another comment on the first post" });
+        }
     }
+}
