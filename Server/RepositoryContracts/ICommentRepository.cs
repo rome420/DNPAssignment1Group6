@@ -9,4 +9,6 @@ public interface ICommentRepository
     Task DeleteAsync(int id);
     Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId);
     IQueryable<Comment> GetMany();
+    Task<Comment?> GetSingleAsync(int id);
+    
 }
