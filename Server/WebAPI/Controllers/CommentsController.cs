@@ -55,20 +55,26 @@ public class CommentsController : ControllerBase
     
     
     [HttpGet("{id:int}")]
-    
     public async Task<ActionResult<CommentDto>> GetSingleComment([FromRoute] int id)
     {
-
+     
         var comment = await _commentRepository.GetSingleAsync(id);
 
+       
+        if (comment == null)
+        {
+            return NotFound($"Comment with ID {id} was not found.");
+        }
 
-        return Ok(new CommentDto()
+       
+        return Ok(new CommentDto
         {
             Body = comment.Body,
             CommentId = comment.CommentId,
             PostId = comment.PostId
         });
     }
+
     
     [HttpPatch("{id:int}")]
     public async Task<ActionResult<CommentDto>> UpdateComment([FromRoute] int id, [FromBody] UpdateCommentDto request)
@@ -93,6 +99,23 @@ public class CommentsController : ControllerBase
             PostId = updatedComment.PostId
         });
     }
+    
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteComment([FromRoute] int id)
+    {
+        var existingComment = await _commentRepository.GetSingleAsync(id);
+        if (existingComment == null)
+        {
+            return NotFound(); 
+        }
+       
+        await _commentRepository.DeleteAsync(id);
+        
+        return NoContent();
+    }
+
+    
+    
     
     
 
