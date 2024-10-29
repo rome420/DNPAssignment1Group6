@@ -80,12 +80,23 @@ namespace InMemoryRepositories
         {
             return Task.FromResult(_users.AsEnumerable());
         }
-
-        public UserInMemoryRepository()
+        
+        public async Task<bool> UserExistsAsync(string username)
         {
-            _users.Add(new User { UserId = 1, Username = "user1", Password = "password1" });
-            _users.Add(new User { UserId = 2, Username = "user2", Password = "password2" });
-            _users.Add(new User { UserId = 3, Username = "user3", Password = "password3" });
+            return await Task.FromResult(_users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)));
         }
+        
+        public async Task<User> GetByIdAsync(int id)
+        {
+            var user = _users.SingleOrDefault(u => u.UserId == id);
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User with ID {id} not found.");
+            }
+            return await Task.FromResult(user);
+        }
+
     }
+    
+
 }

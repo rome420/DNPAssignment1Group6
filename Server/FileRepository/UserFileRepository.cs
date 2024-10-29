@@ -94,5 +94,31 @@ namespace FileRepository
 
             return users.AsQueryable();
         }
+        
+        public async Task<bool> UserExistsAsync(string username)
+        {
+            string usersAsJson = await File.ReadAllTextAsync(filePath);
+            List<User> users = JsonSerializer.Deserialize<List<User>>(usersAsJson) ?? new List<User>();
+
+            return users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        public async Task<User> GetByIdAsync(int id)
+        {
+            string usersAsJson = await File.ReadAllTextAsync(filePath);
+            List<User> users = JsonSerializer.Deserialize<List<User>>(usersAsJson) ?? new List<User>();
+    
+            var user = users.SingleOrDefault(u => u.UserId == id);
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User with ID {id} not found.");
+            }
+            return user;
+        }
+
+
     }
+    
+    
+    
 }
