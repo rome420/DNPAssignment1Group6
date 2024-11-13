@@ -1,0 +1,38 @@
+﻿@page "/posts"
+@using BlazorApp.Services
+@using DTO
+@inject IPostService PostService
+@inject NavigationManager NavigationManager
+
+<h3>Posts</h3>
+@if (posts == null)
+{
+<p>Loading...</p>
+}
+else
+{
+<ul>
+    @foreach (var post in posts)
+    {
+    <li>
+        <a @onclick="() => ViewPostDetails(post.Id)">@post.Title</a> by @post.Author
+    </li>
+    }
+</ul>
+}
+
+@code {
+private IEnumerable<PostDto> posts;
+
+protected override async Task OnInitializedAsync()
+{
+posts = await PostService.GetAllPostsAsync();
+}
+
+private void ViewPostDetails(int postId)
+{
+    NavigationManager.NavigateTo($"/post-details/{postId}");
+    ;
+
+}
+}
