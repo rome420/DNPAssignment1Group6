@@ -1,51 +1,38 @@
-﻿@page "/addcomment/{PostId}"
+﻿@page "/comment/{PostId}"
 @using DTO
 @inject HttpClient Http
 
 <h3>Add Comment</h3>
 
-<EditForm Model="@newComment" OnValidSubmit="HandleAddComment">
+<EditForm Model="@newComment" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <InputTextArea @bind-Value="newComment.Body" placeholder="Write your comment..." />
+    <InputTextArea @bind-Value="newComment.Body" placeholder="Add your comment" />
     <button type="submit">Submit Comment</button>
 </EditForm>
 
-@if (errorMessage != null)
+@if (!string.IsNullOrEmpty(errorMessage))
 {
-<p class="text-danger">@errorMessage</p>
+    <p class="text-danger">@errorMessage</p>
 }
 
 @code {
-[Parameter] public int PostId { get; set; }
-private CommentDto newComment = new CommentDto();
-private string errorMessage;
+    [Parameter] public int PostId { get; set; }
+    private CommentDto newComment = new CommentDto();
+    private string? errorMessage;  // Make errorMessage nullable
 
-private async Task HandleAddComment()
-{
-try
-{
-// Ensure PostId is set before sending
-newComment.PostId = PostId;
-
-var response = await Http.PostAsJsonAsync($"https://yourapiurl.com/posts/{PostId}/comments", newComment);
-
-if (response.IsSuccessStatusCode)
-{
-// Handle success (e.g., reset the form)
-newComment = new CommentDto(); // Clear the form after submission
-errorMessage = null; // Reset any previous error message
-}
-else
-{
-// Handle error if the request failed
-errorMessage = "Failed to add comment. Please try again.";
-}
-}
-catch (Exception ex)
-{
-errorMessage = $"An error occurred: {ex.Message}";
-}
-}
+    private async Task HandleSubmit()
+    {
+        newComment.PostId = PostId;  // Ensure the PostId is set for the new comment
+        var response = await Http.PostAsJsonAsync($"https://yourapiurl.com/posts/{PostId}/comments", newComment);
+        if (response.IsSuccessStatusCode)
+        {
+            // Handle success (e.g., navigate to PostDetails or show a success message)
+        }
+        else
+        {
+            errorMessage = "Failed to add comment. Please try again.";
+        }
+    }
 }

@@ -1,33 +1,43 @@
-﻿@page "/post/{PostId}"
+﻿@page "/post/{postId}"
 @using DTO
 @inject HttpClient Http
 
-<h3>Post Details</h3>
-
+<h3>@post?.Title</h3>
 @if (post == null)
 {
-    <p>Loading...</p>
+<p>Loading...</p>
 }
 else
 {
-    <h4>@post.Title</h4>
-    <p>@post.Body</p>
-    <p><strong>Author:</strong> @post.Author</p>
-    <h5>Comments:</h5>
-    <ul>
-        @foreach (var comment in post.Comments)
-        {
-            <li>@comment.Body</li>
-        }
-    </ul>
+<p>@post.Body</p>
+
+<h4>Author</h4>
+@if (!string.IsNullOrEmpty(post.Author))
+{
+<p>@post.Author</p>  <!-- Display Author as a string -->
+}
+else
+{
+<p>Author not available</p>
+}
+
+<h4>Comments</h4>
+<ul>
+    @foreach (var comment in post.Comments)
+    {
+    <li>@comment.Content</li>
+    }
+</ul>
 }
 
 @code {
-    [Parameter] public int PostId { get; set; }
-    private PostDto post;
+[Parameter]
+public int postId { get; set; }  // The postId parameter from the URL
 
-    protected override async Task OnInitializedAsync()
-    {
-        post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
-    }
+private PostDto? post;  // The post object to be displayed
+
+protected override async Task OnInitializedAsync()
+{
+post = await Http.GetFromJsonAsync<PostDto>($"https://localhost:5126/api/posts/{postId}");  // Replace with your API endpoint
+}
 }

@@ -1,6 +1,5 @@
 ﻿@page "/register"
 @inject HttpClient Http
-@using DTO
 
 <h3>Create New User</h3>
 
@@ -10,54 +9,30 @@
 
     <InputText @bind-Value="newUser.Username" placeholder="Username" />
     <InputText @bind-Value="newUser.Password" type="password" placeholder="Password" />
+    <InputText @bind-Value="newUser.Name" placeholder="Full Name" />
+    <InputText @bind-Value="newUser.Email" placeholder="Email" />
     <button type="submit">Create User</button>
 </EditForm>
 
-@if (errorMessage != null)
+@if (!string.IsNullOrEmpty(errorMessage))
 {
     <p class="text-danger">@errorMessage</p>
 }
 
-@if (isSuccess)
-{
-    <p class="text-success">User created successfully!</p>
-}
-
 @code {
     private CreateUserDto newUser = new CreateUserDto();
-    private string errorMessage;
-    private bool isSuccess = false;
+    private string? errorMessage;
 
     private async Task HandleSubmit()
     {
-        try
+        var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
+        if (response.IsSuccessStatusCode)
         {
-            var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
-            if (response.IsSuccessStatusCode)
-            {
-                // On success, show confirmation and reset form
-                isSuccess = true;
-                errorMessage = null;
-                newUser = new CreateUserDto(); // Clear form
-            }
-            else
-            {
-                // On error, show an error message based on status code
-                isSuccess = false;
-                errorMessage = "An error occurred while creating the user.";
-            }
+            // Handle success (e.g., redirect or show confirmation)
         }
-        catch (Exception ex)
+        else
         {
-            // Handle unexpected errors (e.g., network issues)
-            isSuccess = false;
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = "Failed to create user. Please try again.";
         }
-    }
-
-    public class CreateUserDto
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 }

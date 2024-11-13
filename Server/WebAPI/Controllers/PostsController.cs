@@ -6,11 +6,11 @@ using RepositoryContracts;
 namespace WebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class PostsController : ControllerBase
     {
         private readonly IPostRepository _postRepository;
-        private readonly IUserRepository _userRepository; // Add IUserRepository for user access
+        private readonly IUserRepository _userRepository;
 
         public PostsController(IPostRepository postRepository, IUserRepository userRepository)
         {
@@ -58,7 +58,6 @@ namespace WebAPI.Controllers
         {
             var posts = await _postRepository.GetPostsAsync();
     
-            
             var dtos = posts.Select(post => new PostDto
             {
                 PostId = post.PostId,
@@ -69,7 +68,6 @@ namespace WebAPI.Controllers
 
             return Ok(dtos);
         }
-
 
         // Get a single post by ID
         [HttpGet("{id:int}")]

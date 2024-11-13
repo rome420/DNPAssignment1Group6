@@ -13,7 +13,16 @@ builder.Services.AddScoped<IPostRepository, PostFileRepository>();
 builder.Services.AddScoped<IUserRepository, UserFileRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentFileRepository>();
 
-
+// Configure CORS to allow requests from the Blazor app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -28,7 +37,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+// Enable CORS
+app.UseCors("AllowAll");
 
 app.Run();
-

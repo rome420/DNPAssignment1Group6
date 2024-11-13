@@ -6,25 +6,27 @@
 
 @if (posts == null)
 {
-    <p>Loading posts...</p>
+    <p>Loading...</p>
+}
+else if (!posts.Any())
+{
+    <p>No posts available.</p>
 }
 else
 {
     <ul>
         @foreach (var post in posts)
         {
-            <li>
-                <a href="@($"/post/{post.PostId}")">@post.Title</a> by @post.Author
-            </li>
+            <li>@post.Title</li>
         }
     </ul>
 }
 
 @code {
-    private List<PostDto> posts;
+    private List<PostDto>? posts;
 
     protected override async Task OnInitializedAsync()
     {
-        posts = await Http.GetFromJsonAsync<List<PostDto>>("https://yourapiurl.com/posts");
+        posts = await Http.GetFromJsonAsync<List<PostDto>>("http://localhost:5126/api/posts");
     }
 }
