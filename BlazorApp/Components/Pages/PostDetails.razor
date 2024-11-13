@@ -1,49 +1,33 @@
-﻿@page "/post-details/{postId:int}"
-@using BlazorApp.Services
+﻿@page "/post/{PostId}"
 @using DTO
-@inject IPostService PostService
+@inject HttpClient Http
 
 <h3>Post Details</h3>
 
 @if (post == null)
 {
-<p>Loading...</p>
+    <p>Loading...</p>
 }
 else
 {
-<div>
     <h4>@post.Title</h4>
     <p>@post.Body</p>
     <p><strong>Author:</strong> @post.Author</p>
-    <h5>Comments</h5>
+    <h5>Comments:</h5>
     <ul>
         @foreach (var comment in post.Comments)
         {
-        <li>@comment.Content</li>
+            <li>@comment.Body</li>
         }
     </ul>
-</div>
-<AddComment OnCommentAdded="ReloadPost" PostId="@postId" />
 }
 
 @code {
-[Parameter]
-public int postId { get; set; }
+    [Parameter] public int PostId { get; set; }
+    private PostDto post;
 
-private PostDto post;
-
-protected override async Task OnInitializedAsync()
-{
-await LoadPost();
-}
-
-private async Task LoadPost()
-{
-post = await PostService.GetPostByIdAsync(postId);
-}
-
-private async Task ReloadPost()
-{
-await LoadPost();
-}
+    protected override async Task OnInitializedAsync()
+    {
+        post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
+    }
 }

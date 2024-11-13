@@ -1,0 +1,32 @@
+﻿@page "/createpost"
+@using DTO
+@inject HttpClient Http
+
+<h3>Create New Post</h3>
+
+<EditForm Model="@newPost" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText @bind-Value="newPost.Title" placeholder="Title" />
+    <InputTextArea @bind-Value="newPost.Body" placeholder="Body" />
+    <InputText @bind-Value="newPost.Author" placeholder="Author" />
+    <button type="submit">Create Post</button>
+</EditForm>
+
+@code {
+    private PostDto newPost = new PostDto();
+
+    private async Task HandleSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("https://yourapiurl.com/posts", newPost);
+        if (response.IsSuccessStatusCode)
+        {
+            // Handle success (e.g., redirect or show confirmation)
+        }
+        else
+        {
+            // Handle error
+        }
+    }
+}

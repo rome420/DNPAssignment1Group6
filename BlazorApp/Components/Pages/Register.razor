@@ -1,0 +1,30 @@
+﻿@page "/register"
+@inject HttpClient Http
+
+<h3>Create New User</h3>
+
+<EditForm Model="@newUser" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText @bind-Value="newUser.Username" placeholder="Username" />
+    <InputText @bind-Value="newUser.Password" type="password" placeholder="Password" />
+    <button type="submit">Create User</button>
+</EditForm>
+
+@code {
+    private UserDto newUser = new UserDto();
+
+    private async Task HandleSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
+        if (response.IsSuccessStatusCode)
+        {
+            // Handle success (e.g., redirect or show confirmation)
+        }
+        else
+        {
+            // Handle error
+        }
+    }
+}

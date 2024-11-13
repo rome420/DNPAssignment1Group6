@@ -1,38 +1,56 @@
-﻿@using BlazorApp.Services
+﻿@page "/post/{PostId}"
 @using DTO
-@inject IPostService PostService
+@inject HttpClient Http
+
+<h3>Post Details</h3>
+
+@if (post == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <h4>@post.Title</h4>
+    <p>@post.Body</p>
+    <p><strong>Author:</strong> @post.Author</p>
+    <h5>Comments:</h5>
+    <ul>
+        @foreach (var comment in post.Comments)
+        {
+            <li>@comment.Body</li>
+        }
+    </ul>
+
+    <EditForm Model="@newComment" OnValidSubmit="AddComment">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputTextArea @bind-Value="newComment.Body" placeholder="Add a comment" />
+        <button type="submit">Submit Comment</button>
+    </EditForm>
+}
+
 @code {
-[Parameter]
-public int PostId { get; set; }
+    [Parameter] public int PostId { get; set; }
+    private PostDto post;
+    private CommentDto newComment = new CommentDto();
 
-[Parameter]
-public EventCallback OnCommentAdded { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
+    }
 
-private string commentText;
-
-private async Task HandleSubmit()
-{
-try
-{
-await PostService.AddCommentAsync(PostId, new CreateCommentDto { Content = commentText });
-commentText = string.Empty;
-if (OnCommentAdded.HasDelegate)
-{
-await OnCommentAdded.InvokeAsync(null);
+    private async Task AddComment()
+    {
+        var response = await Http.PostAsJsonAsync($"https://yourapiurl.com/posts/{PostId}/comments", newComment);
+        if (response.IsSuccessStatusCode)
+        {
+            // Reload post details
+            post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
+        }
+        else
+        {
+            // Handle error
+        }
+    }
 }
-}
-catch (Exception ex)
-{
-// Handle error
-Console.WriteLine($"Error adding comment: {ex.Message}");
-}
-}
-}
-
-<EditForm OnValidSubmit="HandleSubmit">
-    <div>
-        <label>Comment:</label>
-        <InputText @bind-Value="commentText" />
-    </div>
-    <button type="submit">Add Comment</button>
-</EditForm>

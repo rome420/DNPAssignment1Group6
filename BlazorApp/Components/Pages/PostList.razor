@@ -1,38 +1,30 @@
 ﻿@page "/posts"
-@using BlazorApp.Services
 @using DTO
-@inject IPostService PostService
-@inject NavigationManager NavigationManager
+@inject HttpClient Http
 
 <h3>Posts</h3>
+
 @if (posts == null)
 {
-<p>Loading...</p>
+    <p>Loading posts...</p>
 }
 else
 {
-<ul>
-    @foreach (var post in posts)
-    {
-    <li>
-        <a @onclick="() => ViewPostDetails(post.Id)">@post.Title</a> by @post.Author
-    </li>
-    }
-</ul>
+    <ul>
+        @foreach (var post in posts)
+        {
+            <li>
+                <a href="@($"/post/{post.PostId}")">@post.Title</a> by @post.Author
+            </li>
+        }
+    </ul>
 }
 
 @code {
-private IEnumerable<PostDto> posts;
+    private List<PostDto> posts;
 
-protected override async Task OnInitializedAsync()
-{
-posts = await PostService.GetAllPostsAsync();
-}
-
-private void ViewPostDetails(int postId)
-{
-    NavigationManager.NavigateTo($"/post-details/{postId}");
-    ;
-
-}
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await Http.GetFromJsonAsync<List<PostDto>>("https://yourapiurl.com/posts");
+    }
 }
