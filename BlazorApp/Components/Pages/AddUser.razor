@@ -1,0 +1,37 @@
+﻿@page "/add-user"
+@using BlazorApp.Services
+@inject IUserService UserService
+
+<h3>Add New User</h3>
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name:</label>
+        <InputText @bind-Value="newUser.Name" class="form-control" />
+    </div>
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="newUser.Email" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Add User</button>
+</EditForm>
+
+@code {
+    private CreateUserDto newUser = new CreateUserDto();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await UserService.AddUserAsync(newUser);
+            // Handle success (e.g., show a message or navigate)
+        }
+        catch (Exception ex)
+        {
+            // Handle errors (e.g., display error message)
+            Console.WriteLine($"Error adding user: {ex.Message}");
+        }
+    }
+}

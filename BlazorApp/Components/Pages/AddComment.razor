@@ -1,0 +1,38 @@
+﻿@using BlazorApp.Services
+@using DTO
+@inject IPostService PostService
+@code {
+[Parameter]
+public int PostId { get; set; }
+
+[Parameter]
+public EventCallback OnCommentAdded { get; set; }
+
+private string commentText;
+
+private async Task HandleSubmit()
+{
+try
+{
+await PostService.AddCommentAsync(PostId, new CreateCommentDto { Content = commentText });
+commentText = string.Empty;
+if (OnCommentAdded.HasDelegate)
+{
+await OnCommentAdded.InvokeAsync(null);
+}
+}
+catch (Exception ex)
+{
+// Handle error
+Console.WriteLine($"Error adding comment: {ex.Message}");
+}
+}
+}
+
+<EditForm OnValidSubmit="HandleSubmit">
+    <div>
+        <label>Comment:</label>
+        <InputText @bind-Value="commentText" />
+    </div>
+    <button type="submit">Add Comment</button>
+</EditForm>
