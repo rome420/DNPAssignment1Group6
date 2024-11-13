@@ -1,56 +1,51 @@
-﻿@page "/post/{PostId}"
+﻿@page "/addcomment/{PostId}"
 @using DTO
 @inject HttpClient Http
 
-<h3>Post Details</h3>
+<h3>Add Comment</h3>
 
-@if (post == null)
+<EditForm Model="@newComment" OnValidSubmit="HandleAddComment">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputTextArea @bind-Value="newComment.Body" placeholder="Write your comment..." />
+    <button type="submit">Submit Comment</button>
+</EditForm>
+
+@if (errorMessage != null)
 {
-    <p>Loading...</p>
-}
-else
-{
-    <h4>@post.Title</h4>
-    <p>@post.Body</p>
-    <p><strong>Author:</strong> @post.Author</p>
-    <h5>Comments:</h5>
-    <ul>
-        @foreach (var comment in post.Comments)
-        {
-            <li>@comment.Body</li>
-        }
-    </ul>
-
-    <EditForm Model="@newComment" OnValidSubmit="AddComment">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <InputTextArea @bind-Value="newComment.Body" placeholder="Add a comment" />
-        <button type="submit">Submit Comment</button>
-    </EditForm>
+<p class="text-danger">@errorMessage</p>
 }
 
 @code {
-    [Parameter] public int PostId { get; set; }
-    private PostDto post;
-    private CommentDto newComment = new CommentDto();
+[Parameter] public int PostId { get; set; }
+private CommentDto newComment = new CommentDto();
+private string errorMessage;
 
-    protected override async Task OnInitializedAsync()
-    {
-        post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
-    }
+private async Task HandleAddComment()
+{
+try
+{
+// Ensure PostId is set before sending
+newComment.PostId = PostId;
 
-    private async Task AddComment()
-    {
-        var response = await Http.PostAsJsonAsync($"https://yourapiurl.com/posts/{PostId}/comments", newComment);
-        if (response.IsSuccessStatusCode)
-        {
-            // Reload post details
-            post = await Http.GetFromJsonAsync<PostDto>($"https://yourapiurl.com/posts/{PostId}");
-        }
-        else
-        {
-            // Handle error
-        }
-    }
+var response = await Http.PostAsJsonAsync($"https://yourapiurl.com/posts/{PostId}/comments", newComment);
+
+if (response.IsSuccessStatusCode)
+{
+// Handle success (e.g., reset the form)
+newComment = new CommentDto(); // Clear the form after submission
+errorMessage = null; // Reset any previous error message
+}
+else
+{
+// Handle error if the request failed
+errorMessage = "Failed to add comment. Please try again.";
+}
+}
+catch (Exception ex)
+{
+errorMessage = $"An error occurred: {ex.Message}";
+}
+}
 }

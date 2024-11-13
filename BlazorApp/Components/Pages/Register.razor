@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @inject HttpClient Http
+@using DTO
 
 <h3>Create New User</h3>
 
@@ -12,19 +13,51 @@
     <button type="submit">Create User</button>
 </EditForm>
 
+@if (errorMessage != null)
+{
+    <p class="text-danger">@errorMessage</p>
+}
+
+@if (isSuccess)
+{
+    <p class="text-success">User created successfully!</p>
+}
+
 @code {
-    private UserDto newUser = new UserDto();
+    private CreateUserDto newUser = new CreateUserDto();
+    private string errorMessage;
+    private bool isSuccess = false;
 
     private async Task HandleSubmit()
     {
-        var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            // Handle success (e.g., redirect or show confirmation)
+            var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
+            if (response.IsSuccessStatusCode)
+            {
+                // On success, show confirmation and reset form
+                isSuccess = true;
+                errorMessage = null;
+                newUser = new CreateUserDto(); // Clear form
+            }
+            else
+            {
+                // On error, show an error message based on status code
+                isSuccess = false;
+                errorMessage = "An error occurred while creating the user.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // Handle error
+            // Handle unexpected errors (e.g., network issues)
+            isSuccess = false;
+            errorMessage = $"Error: {ex.Message}";
         }
+    }
+
+    public class CreateUserDto
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }
