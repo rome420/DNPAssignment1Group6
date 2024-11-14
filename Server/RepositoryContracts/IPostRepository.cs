@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Entities;
 
 namespace RepositoryContracts
@@ -8,10 +10,8 @@ namespace RepositoryContracts
         Task<Post> AddAsync(Post post);
         Task UpdateAsync(Post post);
         Task DeleteAsync(int id);
-        Task<Post> GetSingleAsync(int id);  // If you still need this method.
         IQueryable<Post> GetMany();
-        Task<Post> GetPostByIdAsync(int postId);  // This needs to return a Post
+        Task<Post?> GetPostByIdAsync(int postId);  // Ensure it returns a nullable Post
         Task<IEnumerable<Post>> GetPostsAsync();
-
     }
 }

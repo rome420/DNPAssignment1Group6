@@ -7,12 +7,7 @@ namespace DTO
         public int PostId { get; set; }
         public string Title { get; set; }
         public string Body { get; set; }
-        
-
-        [JsonIgnore] // Prevent serialization to avoid circular references
-        public String Author { get; set; }
-
-        public int Id { get; set; }
-        public IEnumerable<CommentDto> Comments { get; set; } 
+        public string Author { get; set; }
+        public IEnumerable<CommentDto> Comments { get; set; } = new List<CommentDto>();
     }
 }

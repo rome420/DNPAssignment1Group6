@@ -1,43 +1,82 @@
-﻿@page "/post/{postId}"
+﻿@page "/posts/{id:int}"
 @using DTO
 @inject HttpClient Http
 
-<h3>@post?.Title</h3>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private PostDto? post;
+    private CreateCommentDto newComment = new CreateCommentDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await Http.GetFromJsonAsync<PostDto>($"http://localhost:5126/api/posts/{Id}");
+        await LoadComments();
+    }
+
+    private async Task LoadComments()
+    {
+        try
+        {
+            var comments = await Http.GetFromJsonAsync<List<CommentDto>>($"http://localhost:5126/api/posts/{Id}/comments");
+            if (post != null)
+            {
+                post.Comments = comments;
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Error fetching comments: {ex.Message}");
+        }
+    }
+
+    private async Task AddComment()
+    {
+        newComment.PostId = Id;
+        var response = await Http.PostAsJsonAsync($"http://localhost:5126/api/posts/{Id}/comments", newComment);
+        if (response.IsSuccessStatusCode)
+        {
+            newComment = new CreateCommentDto(); // Reset the form
+            await LoadComments(); // Refresh the post with new comments
+        }
+        else
+        {
+            Console.WriteLine("Failed to submit comment.");
+        }
+    }
+}
+
 @if (post == null)
 {
-<p>Loading...</p>
+    <p>Loading...</p>
 }
 else
 {
-<p>@post.Body</p>
+    <h3>@post.Title</h3>
+    <p><strong>Author:</strong> @post.Author</p>
+    <p>@post.Body</p>
+    <h4>Comments</h4>
+    <ul>
+        @foreach (var comment in post.Comments)
+        {
+            <li>@comment.Text</li>
+        }
+    </ul>
 
-<h4>Author</h4>
-@if (!string.IsNullOrEmpty(post.Author))
-{
-<p>@post.Author</p>  <!-- Display Author as a string -->
-}
-else
-{
-<p>Author not available</p>
-}
+    <h4>Add a Comment</h4>
+    <EditForm Model="newComment" OnValidSubmit="AddComment">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-<h4>Comments</h4>
-<ul>
-    @foreach (var comment in post.Comments)
-    {
-    <li>@comment.Content</li>
-    }
-</ul>
-}
-
-@code {
-[Parameter]
-public int postId { get; set; }  // The postId parameter from the URL
-
-private PostDto? post;  // The post object to be displayed
-
-protected override async Task OnInitializedAsync()
-{
-post = await Http.GetFromJsonAsync<PostDto>($"https://localhost:5126/api/posts/{postId}");  // Replace with your API endpoint
-}
+        <div>
+            <label for="text">Text:</label>
+            <InputText id="text" @bind-Value="newComment.Text" class="form-control" />
+        </div>
+        <div>
+            <label for="author">Author:</label>
+            <InputText id="author" @bind-Value="newComment.Author" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
 }

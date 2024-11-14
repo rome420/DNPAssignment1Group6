@@ -15,40 +15,37 @@ namespace WebAPI.Controllers
         public PostsController(IPostRepository postRepository, IUserRepository userRepository)
         {
             _postRepository = postRepository;
-            _userRepository = userRepository; 
+            _userRepository = userRepository;
         }
 
         // Create a new post
         [HttpPost]
         public async Task<ActionResult<PostDto>> CreatePost([FromBody] CreatePostDto request)
         {
-            // Check if the user exists
             var user = await _userRepository.GetByIdAsync(request.UserId);
             if (user == null)
             {
                 return NotFound($"User with ID {request.UserId} not found.");
             }
 
-            // Create a new post
             var post = new Post
             {
                 Title = request.Title,
                 Body = request.Body,
-                Author = user // Associate the post with the user
+                Author = user
             };
 
-            // Add the post to the repository
             var addedPost = await _postRepository.AddAsync(post);
 
-            // Update the user's post list
             user.Posts.Add(addedPost);
-            await _userRepository.UpdateAsync(user); // Save changes to the user
+            await _userRepository.UpdateAsync(user);
 
             return Created($"/Posts/{addedPost.PostId}", new PostDto
             {
                 PostId = addedPost.PostId,
                 Title = addedPost.Title,
                 Body = addedPost.Body,
+                Author = user.Username
             });
         }
 
@@ -57,13 +54,13 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<List<PostDto>>> GetPosts()
         {
             var posts = await _postRepository.GetPostsAsync();
-    
+
             var dtos = posts.Select(post => new PostDto
             {
                 PostId = post.PostId,
                 Title = post.Title,
                 Body = post.Body,
-                Author = post.Author?.Username 
+                Author = post.Author?.Username ?? "Unknown"
             }).ToList();
 
             return Ok(dtos);
@@ -79,13 +76,21 @@ namespace WebAPI.Controllers
                 return NotFound($"Post with ID {id} not found.");
             }
 
-            return Ok(new PostDto
+            var postDto = new PostDto
             {
                 PostId = post.PostId,
                 Title = post.Title,
                 Body = post.Body,
-                Author = post.Author.Username 
-            });
+                Author = post.Author?.Username ?? "Unknown",
+                Comments = post.Comments.Select(c => new CommentDto
+                {
+                    CommentId = c.CommentId,
+                    Text = c.Text,
+                    Author = c.Author?.Username ?? "Unknown"
+                }).ToList()
+            };
+
+            return Ok(postDto);
         }
 
         // Update an existing post
@@ -108,7 +113,7 @@ namespace WebAPI.Controllers
                 PostId = existingPost.PostId,
                 Title = existingPost.Title,
                 Body = existingPost.Body,
-                Author = existingPost.Author.Username 
+                Author = existingPost.Author?.Username ?? "Unknown"
             });
         }
 

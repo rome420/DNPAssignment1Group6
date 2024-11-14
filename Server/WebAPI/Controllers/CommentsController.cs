@@ -2,117 +2,61 @@
 using Entities;
 using Microsoft.AspNetCore.Mvc;
 using RepositoryContracts;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace WebAPI.Controllers;
-
-
-[ApiController]
-[Route("[controller]")]
-public class CommentsController : ControllerBase
+namespace WebAPI.Controllers
 {
-    private readonly ICommentRepository _commentRepository;
-
-
-    public CommentsController(ICommentRepository commentRepository)
+    [ApiController]
+    [Route("api/posts/{postId}/comments")]
+    public class CommentsController : ControllerBase
     {
-        this._commentRepository = commentRepository;
-    }
+        private readonly ICommentRepository _commentRepository;
 
-    [HttpGet]
-    public async Task<ActionResult<CommentDto>> GetComments()
-    {
-        var comments = _commentRepository.GetMany().ToList();
-        var dtos = new List<CommentDto>();
-        foreach (var comment in comments)
+        public CommentsController(ICommentRepository commentRepository)
         {
-            dtos.Add(new CommentDto()
+            _commentRepository = commentRepository;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(int postId)
+        {
+            var comments = await _commentRepository.GetCommentsByPostIdAsync(postId);
+
+            if (comments == null || !comments.Any())
             {
-                Body = comment.Body,
-                CommentId = comment.CommentId, 
-                PostId = comment.PostId
+                return NotFound($"No comments found for post with ID {postId}.");
+            }
+
+            var commentDtos = comments.Select(c => new CommentDto
+            {
+                CommentId = c.CommentId,
+                Text = c.Text,
+                Author = c.Author.Username
+            }).ToList();
+
+            return Ok(commentDtos);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CommentDto>> AddComment([FromBody] CreateCommentDto request)
+        {
+            var comment = new Comment
+            {
+                Text = request.Text,
+                Author = new User { Username = request.Author }, // Assuming Author is a string in CreateCommentDto
+                PostId = request.PostId
+            };
+
+            await _commentRepository.AddAsync(comment);
+
+            return CreatedAtAction(nameof(GetComments), new { postId = request.PostId }, new CommentDto
+            {
+                CommentId = comment.CommentId,
+                Text = comment.Text,
+                Author = comment.Author.Username
             });
-            
         }
-
-
-        return Ok(dtos);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<CommentDto>> GetComments([FromBody] CreateCommentDto request)
-    {
-        var comment = new Comment()
-        {
-            Body = request.Body,
-            CommentId = 2137,
-            PostId = request.PostId
-
-        };
-
-        var addedComment = await _commentRepository.AddAsync(comment);
-        return Created($"/Comments/{addedComment.CommentId}", addedComment);
-    }
-    
-    
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<CommentDto>> GetSingleComment([FromRoute] int id)
-    {
-     
-        var comment = await _commentRepository.GetSingleAsync(id);
-
-       
-        if (comment == null)
-        {
-            return NotFound($"Comment with ID {id} was not found.");
-        }
-
-       
-        return Ok(new CommentDto
-        {
-            Body = comment.Body,
-            CommentId = comment.CommentId,
-            PostId = comment.PostId
-        });
-    }
-
-    
-    [HttpPatch("{id:int}")]
-    public async Task<ActionResult<CommentDto>> UpdateComment([FromRoute] int id, [FromBody] UpdateCommentDto request)
-    {
-        var existingComment = await _commentRepository.GetSingleAsync(id);
-        if (existingComment == null)
-        {
-            return NotFound(); 
-        }
-        
-        existingComment.Body = request.Body;
-        existingComment.PostId = request.PostId;
-        
-        await _commentRepository.UpdateAsync(existingComment); 
-        
-        var updatedComment = await _commentRepository.GetSingleAsync(id);
-        
-        return Ok(new CommentDto
-        {
-            CommentId = updatedComment.CommentId,
-            Body = updatedComment.Body,
-            PostId = updatedComment.PostId
-        });
-    }
-    
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteComment([FromRoute] int id)
-    {
-        var existingComment = await _commentRepository.GetSingleAsync(id);
-        if (existingComment == null)
-        {
-            return NotFound(); 
-        }
-       
-        await _commentRepository.DeleteAsync(id);
-        
-        return NoContent();
     }
 }
-
-

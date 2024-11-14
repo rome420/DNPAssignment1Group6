@@ -1,6 +1,7 @@
 ﻿@page "/posts"
 @using DTO
 @inject HttpClient Http
+@inject NavigationManager Navigation
 
 <h3>Posts</h3>
 
@@ -17,16 +18,63 @@ else
     <ul>
         @foreach (var post in posts)
         {
-            <li>@post.Title</li>
+            <li>
+                <a @onclick="() => NavigateToPost(post.PostId)">@post.Title</a>
+            </li>
         }
     </ul>
 }
 
+<h4>Add a New Post</h4>
+<EditForm Model="newPost" OnValidSubmit="AddPost">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="title">Title:</label>
+        <InputText id="title" @bind-Value="newPost.Title" class="form-control" />
+    </div>
+    <div>
+        <label for="body">Body:</label>
+        <InputTextArea id="body" @bind-Value="newPost.Body" class="form-control" />
+    </div>
+    <div>
+        <label for="userId">User ID:</label>
+        <InputNumber id="userId" @bind-Value="newPost.UserId" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
 @code {
     private List<PostDto>? posts;
+    private CreatePostDto newPost = new CreatePostDto();
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
         posts = await Http.GetFromJsonAsync<List<PostDto>>("http://localhost:5126/api/posts");
+    }
+
+    private void NavigateToPost(int postId)
+    {
+        Navigation.NavigateTo($"/posts/{postId}");
+    }
+
+    private async Task AddPost()
+    {
+        var response = await Http.PostAsJsonAsync("http://localhost:5126/api/posts", newPost);
+        if (response.IsSuccessStatusCode)
+        {
+            newPost = new CreatePostDto(); // Reset the form
+            await LoadPosts(); // Refresh the list of posts
+        }
+        else
+        {
+            Console.WriteLine("Failed to submit post.");
+        }
     }
 }

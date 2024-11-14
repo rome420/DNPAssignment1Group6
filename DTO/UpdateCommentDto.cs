@@ -1,7 +1,8 @@
-﻿namespace DTO;
-
-public class UpdateCommentDto
+﻿namespace DTO
 {
-    public string Body { get; set; }
-    public int PostId { get; set; }
+    public class UpdateCommentDto
+    {
+        public string Text { get; set; }
+        public string Body { get; set; }
+    }
 }

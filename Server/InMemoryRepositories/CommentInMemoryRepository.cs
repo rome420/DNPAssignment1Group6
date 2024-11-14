@@ -1,4 +1,7 @@
-﻿using Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Entities;
 using RepositoryContracts;
 
 namespace InMemoryRepositories
@@ -6,91 +9,53 @@ namespace InMemoryRepositories
     public class CommentInMemoryRepository : ICommentRepository
     {
         private readonly List<Comment> _comments = new List<Comment>();
-        private readonly List<Post> _posts = new List<Post>();  
-        
-        public async Task<Comment> AddAsync(Comment comment)
+
+        public async Task AddAsync(Comment comment)
         {
-            if (comment == null)
-            {
-                throw new ArgumentNullException(nameof(comment));
-            }
-
-            if (!_posts.Any(p => p.PostId == comment.PostId))
-            {
-                throw new ArgumentException($"Post with ID {comment.PostId} does not exist.");
-            }
-
-            comment.CommentId = _comments.Any() 
-                ? _comments.Max(c => c.CommentId) + 1
-                : 1;
-
+            comment.CommentId = _comments.Any() ? _comments.Max(c => c.CommentId) + 1 : 1;
             _comments.Add(comment);
-            return await Task.FromResult(comment);
-        }
-
-        public async Task UpdateAsync(Comment comment)
-        {
-            if (comment == null)
-            {
-                throw new ArgumentNullException(nameof(comment));
-            }
-
-            var existingComment = _comments.SingleOrDefault(c => c.CommentId == comment.CommentId);
-            if (existingComment == null)
-            {
-                throw new InvalidOperationException($"Comment with ID '{comment.CommentId}' not found.");
-            }
-
-            if (!_posts.Any(p => p.PostId == comment.PostId))
-            {
-                throw new ArgumentException($"Post with ID {comment.PostId} does not exist.");
-            }
-
-            _comments.Remove(existingComment);
-            _comments.Add(comment);
-
             await Task.CompletedTask;
         }
 
-        public async Task DeleteAsync(int id)
+        public Task UpdateAsync(Comment comment)
         {
-            var commentToRemove = _comments.SingleOrDefault(c => c.CommentId == id);
-            if (commentToRemove == null)
-            {
-                throw new InvalidOperationException($"Comment with ID '{id}' not found.");
-            }
-
-            _comments.Remove(commentToRemove);
-            await Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId)
+        public Task DeleteAsync(int id)
         {
-            var comments = _comments.Where(c => c.PostId == postId);
-            return Task.FromResult(comments.AsEnumerable());
+            throw new NotImplementedException();
         }
 
-        public async Task<Comment> GetSingleAsync(int id)
+        public Task<IEnumerable<Comment>> GetCommentsAsync()
         {
-            var comment = _comments.SingleOrDefault(c => c.CommentId == id);
-            if (comment == null)
-            {
-                throw new InvalidOperationException($"Comment with ID '{id}' not found.");
-            }
+            throw new NotImplementedException();
+        }
 
-            return await Task.FromResult(comment);
+        public Task<Comment?> GetCommentByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment?> GetSingleAsync(int id)
+        {
+            throw new NotImplementedException();
         }
 
         public IQueryable<Comment> GetMany()
         {
-            return _comments.AsQueryable();
+            throw new NotImplementedException();
         }
-        
-        public CommentInMemoryRepository()
+
+        public async Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId)
         {
-            _comments.Add(new Comment { CommentId = 1, PostId = 1, Body = "This is a comment on the first post" });
-            _comments.Add(new Comment { CommentId = 2, PostId = 1, Body = "This is a comment on the second post" });
-            _comments.Add(new Comment { CommentId = 3, PostId = 1, Body = "This is another comment on the first post" });
+            var comments = _comments.Where(c => c.PostId == postId).ToList();
+            return await Task.FromResult(comments);
+        }
+
+        Task<Comment> ICommentRepository.AddAsync(Comment comment)
+        {
+            throw new NotImplementedException();
         }
     }
 }

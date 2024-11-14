@@ -1,8 +1,10 @@
-﻿namespace DTO;
-
-public class CreateCommentDto
+﻿namespace DTO
 {
-    public int PostId { get; set; }     // The ID of the post this comment belongs to
-    public string Body { get; set; }    // The content of the comment
-    public string Content { get; set; }
+    public class CreateCommentDto
+    {
+        public string Text { get; set; }
+        public int PostId { get; set; }
+        public int UserId { get; set; }
+        public string Author { get; set; }
+    }
 }

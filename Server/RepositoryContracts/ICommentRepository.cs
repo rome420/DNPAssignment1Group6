@@ -1,14 +1,18 @@
-﻿using Entities;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Entities;
 
-namespace RepositoryContracts;
-
-public interface ICommentRepository
+namespace RepositoryContracts
 {
-    Task<Comment> AddAsync(Comment comment);
-    Task UpdateAsync(Comment comment);
-    Task DeleteAsync(int id);
-    Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId);
-    IQueryable<Comment> GetMany();
-    Task<Comment?> GetSingleAsync(int id);
-    
+    public interface ICommentRepository
+    {
+        Task<Comment?> GetSingleAsync(int id);
+        IQueryable<Comment> GetMany();
+        Task<IEnumerable<Comment>> GetCommentsByPostIdAsync(int postId);
+        Task<Comment> AddAsync(Comment comment);
+        Task UpdateAsync(Comment comment);
+        Task DeleteAsync(int id);
+        Task<IEnumerable<Comment>> GetCommentsAsync(); // Add this method
+        Task<Comment?> GetCommentByIdAsync(int id); // Add this method
+    }
 }

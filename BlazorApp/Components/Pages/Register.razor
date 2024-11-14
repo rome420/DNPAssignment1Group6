@@ -1,38 +1,37 @@
 ﻿@page "/register"
+@using DTO
 @inject HttpClient Http
 
-<h3>Create New User</h3>
+<h3>Register</h3>
 
-<EditForm Model="@newUser" OnValidSubmit="HandleSubmit">
+<EditForm Model="newUser" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <InputText @bind-Value="newUser.Username" placeholder="Username" />
-    <InputText @bind-Value="newUser.Password" type="password" placeholder="Password" />
-    <InputText @bind-Value="newUser.Name" placeholder="Full Name" />
-    <InputText @bind-Value="newUser.Email" placeholder="Email" />
-    <button type="submit">Create User</button>
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="newUser.Username" class="form-control" />
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="newUser.Password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
 </EditForm>
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <p class="text-danger">@errorMessage</p>
-}
 
 @code {
     private CreateUserDto newUser = new CreateUserDto();
-    private string? errorMessage;
 
     private async Task HandleSubmit()
     {
-        var response = await Http.PostAsJsonAsync("https://yourapiurl.com/users", newUser);
+        var response = await Http.PostAsJsonAsync("http://localhost:5126/api/users", newUser);
         if (response.IsSuccessStatusCode)
         {
-            // Handle success (e.g., redirect or show confirmation)
+            Console.WriteLine("User registered successfully.");
         }
         else
         {
-            errorMessage = "Failed to create user. Please try again.";
+            Console.WriteLine("Failed to register user.");
         }
     }
 }
