@@ -4,8 +4,9 @@
     {
         public int PostId { get; set; }
         public string Title { get; set; }
-        public string Body { get; set; }  // Ensure this property is defined
-        public User Author { get; set; }  // Ensure this property is defined
+        public string Body { get; set; }
+        public User Author { get; set; }
+        public int UserId { get; set; }  // Add this property
         public List<Comment> Comments { get; set; } = new();
     }
 }

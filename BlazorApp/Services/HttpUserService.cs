@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using BlazorApp.Services;
+using DTO;
 
 public class HttpUserService : IUserService
 {

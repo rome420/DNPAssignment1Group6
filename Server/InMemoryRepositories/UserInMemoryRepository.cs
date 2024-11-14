@@ -85,7 +85,12 @@ namespace InMemoryRepositories
         {
             return await Task.FromResult(_users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)));
         }
-        
+
+        public Task<User> GetUserByUsernameAsync(string username)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<User> GetByIdAsync(int id)
         {
             var user = _users.SingleOrDefault(u => u.UserId == id);

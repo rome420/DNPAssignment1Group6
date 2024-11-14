@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Entities;
 using RepositoryContracts;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FileRepository
 {
@@ -116,9 +118,12 @@ namespace FileRepository
             return user;
         }
 
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            string usersAsJson = await File.ReadAllTextAsync(filePath);
+            List<User> users = JsonSerializer.Deserialize<List<User>>(usersAsJson) ?? new List<User>();
 
+            return users.SingleOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        }
     }
-    
-    
-    
 }
