@@ -7,8 +7,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ApiContracts\ApiContracts.csproj" />
-      <ProjectReference Include="..\DTO\DTO.csproj" />
+        <ProjectReference Include="..\ApiContracts\ApiContracts.csproj" />
+        <ProjectReference Include="..\DTO\DTO.csproj" />
+        <ProjectReference Include="..\Server\CLI\CLI.csproj" />
+        <ProjectReference Include="..\Server\FileRepository\FileRepository.csproj" />
+        <ProjectReference Include="..\Server\InMemoryRepositories\InMemoryRepositories.csproj" />
+        <ProjectReference Include="..\Server\RepositoryContracts\RepositoryContracts.csproj" />
+        <ProjectReference Include="..\Server\WebAPI\WebAPI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     </ItemGroup>
 
 </Project>

@@ -31,7 +31,7 @@ namespace WebAPI.Controllers
             if (users == null || !users.Any())
             {
                 _logger.LogWarning("No users found.");
-                return NotFound("No users found."); // Handle case where no users exist
+                return NotFound("No users found.");
             }
 
             var dtos = users.Select(user => new UserDto
@@ -43,7 +43,7 @@ namespace WebAPI.Controllers
                     PostId = p.PostId,
                     Title = p.Title,
                     Body = p.Body
-                }).ToList() ?? new List<PostDto>() // Handle null posts
+                }).ToList() ?? new List<PostDto>()
             }).ToList();
 
             return Ok(dtos);
@@ -61,19 +61,18 @@ namespace WebAPI.Controllers
 
             _logger.LogInformation($"Creating user with username: {request.Username}");
 
-            // Check if the username is already taken
             var existingUser = (await _userRepository.GetUsersAsync())
                                 .FirstOrDefault(u => u.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase));
             if (existingUser != null)
             {
                 _logger.LogWarning($"Username '{request.Username}' is already taken.");
-                return Conflict($"Username '{request.Username}' is already taken."); // 409 Conflict
+                return Conflict($"Username '{request.Username}' is already taken.");
             }
 
             var user = new User
             {
                 Username = request.Username,
-                Password = request.Password // Consider hashing the password before saving
+                Password = request.Password
             };
 
             var addedUser = await _userRepository.AddAsync(user);
@@ -86,7 +85,7 @@ namespace WebAPI.Controllers
                     PostId = p.PostId,
                     Title = p.Title,
                     Body = p.Body
-                }).ToList() ?? new List<PostDto>() // Handle null posts
+                }).ToList() ?? new List<PostDto>()
             });
         }
 
@@ -111,7 +110,7 @@ namespace WebAPI.Controllers
                     PostId = p.PostId,
                     Title = p.Title,
                     Body = p.Body
-                }).ToList() ?? new List<PostDto>() // Handle null posts
+                }).ToList() ?? new List<PostDto>()
             });
         }
 
@@ -135,7 +134,7 @@ namespace WebAPI.Controllers
             }
 
             existingUser.Username = request.Username;
-            existingUser.Password = request.Password; // Consider hashing the password
+            existingUser.Password = request.Password;
 
             await _userRepository.UpdateAsync(existingUser);
 
@@ -148,7 +147,7 @@ namespace WebAPI.Controllers
                     PostId = p.PostId,
                     Title = p.Title,
                     Body = p.Body
-                }).ToList() ?? new List<PostDto>() // Handle null posts
+                }).ToList() ?? new List<PostDto>()
             });
         }
 

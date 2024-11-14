@@ -1,4 +1,7 @@
+using BlazorApp.Auth;
 using BlazorApp.Components;
+using BlazorApp.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,11 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri("http://localhost:5126")  // Use your actual API URL here
     };
 });
+
+// Register application services
+builder.Services.AddScoped<IUserService, HttpUserService>();
+builder.Services.AddScoped<IPostService, HttpPostService>();
+builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
 
 // CORS configuration (if Blazor app and API are on different ports)
 builder.Services.AddCors(options =>

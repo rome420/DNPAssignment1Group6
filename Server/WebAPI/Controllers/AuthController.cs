@@ -1,8 +1,11 @@
 ﻿using DTO;
 using Entities;
 using Microsoft.AspNetCore.Mvc;
-using RepositoryContracts;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
@@ -11,49 +14,59 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly string userFilePath = "C:/Users/peeta/Desktop/GIT REPOSITORY/DNPAssignment1Group6/users.json";
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IUserRepository userRepository)
+        public AuthController(ILogger<AuthController> logger)
         {
-            _userRepository = userRepository;
+            _logger = logger;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var user = await _userRepository.GetUserByUsernameAsync(loginDto.Username);
-            if (user == null)
+            try
             {
-                return Unauthorized("User does not exist.");
-            }
+                var userJson = await System.IO.File.ReadAllTextAsync(userFilePath);
+                var users = JsonSerializer.Deserialize<List<User>>(userJson);
 
-            if (user.Password != loginDto.Password)
-            {
-                return Unauthorized("Incorrect password.");
-            }
+                var user = users?.FirstOrDefault(u => u.Username == loginDto.Username && u.Password == loginDto.Password);
 
-            var userDto = new UserDto
-            {
-                UserId = user.UserId,
-                Username = user.Username,
-                Posts = (user.Posts ?? new List<Post>()).Select(p => new PostDto
+                if (user == null)
                 {
-                    PostId = p.PostId,
-                    Title = p.Title,
-                    Body = p.Body,
-                    Author = p.Author.Username,
-                    Comments = p.Comments.Select(c => new CommentDto
-                    {
-                        CommentId = c.CommentId,
-                        Text = c.Text,  // Use Text property instead of Content
-                        Body = c.Body,
-                        PostId = c.PostId,
-                        Author = c.Author.Username
-                    }).ToList()
-                }).ToList()
-            };
+                    _logger.LogWarning("Invalid username or password.");
+                    return Unauthorized("Invalid username or password.");
+                }
 
-            return Ok(userDto);
+                var userDto = new UserDto
+                {
+                    UserId = user.UserId,
+                    Username = user.Username,
+                    Posts = user.Posts?.Select(p => new PostDto
+                    {
+                        PostId = p.PostId,
+                        Title = p.Title,
+                        Body = p.Body
+                    }).ToList() ?? new List<PostDto>()
+                };
+
+                return Ok(userDto);
+            }
+            catch (FileNotFoundException)
+            {
+                _logger.LogError("User file not found.");
+                return NotFound("User file not found.");
+            }
+            catch (JsonException)
+            {
+                _logger.LogError("Error parsing user file.");
+                return BadRequest("Error parsing user file.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Internal server error: {ex.Message}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }
